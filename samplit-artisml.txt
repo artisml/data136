@@ -1,0 +1,18 @@
+import random
+import sys
+<<<<<<< HEAD
+for CHANGEA in open(sys.argv[1]):
+    if random.random() < 0.01:
+        print(CHANGEA, end="")
+
+
+
+
+=======
+
+for CHANGEB in open(sys.argv[1]):
+    if random.random() < 0.01:
+        print(CHANGEB, end="")
+>>>>>>> hw_1b
+
+
