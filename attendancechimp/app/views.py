@@ -41,7 +41,8 @@ def sum_view(request):
 	n1 = Decimal(request.GET.get("n1"))
 	n2 = Decimal(request.GET.get("n2"))
 	total = n1 + n2
-	return HttpResponse(f'<p>{{"sum": {total}}}</p>')
+	return HttpResponse(f"<p>{total}</p>")
+
 
 
 
