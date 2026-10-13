@@ -15,7 +15,7 @@ from datetime import datetime
 import zoneinfo
 import json
 import io
-
+from decimal import Decimal
 # from .models import (InstructorProfile, StudentProfile, Course, Enrollment,
 #                      Lecture, QRCodeUpload, is_instructor, is_student,
 #                      getUploadsForCourse)
@@ -38,9 +38,11 @@ def time_view(request):
 
     return HttpResponse(now.strftime("%H:%M"))
 def sum_view(request):
-    n1 = float(request.GET.get("n1"))
-    n2 = float(request.GET.get("n2"))
-    return JsonResponse({"sum": n1 + n2})
+	n1 = Decimal(request.GET.get("n1"))
+	n2 = Decimal(request.GET.get("n2"))
+	total = n1 + n2
+	return HttpResponse(f'<p>{{"sum": {total}}}</p>')
+
 
 
 # ---------------------------------------------------------------------------
