@@ -1,0 +1,2 @@
+The model I created is simpler because it has fewer fields. Both models use separate student and instructor profiles, prevent duplicate enrollments, and also allow people to generate unique QR. claude code adds course codes and terms, active enrollment, qr expiration, and additional helper methods to validate uploads and calculate attendance as a stat. That requireod the setup of something called Pillow for the ImageField. My model is more straightforward, but has more limited capacity.
+
