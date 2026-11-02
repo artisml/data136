@@ -49,8 +49,8 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("name", models.CharField()),
-                ("meeting_schedule", models.CharField()),
+                ("name", models.CharField(max_length = 300)),
+                ("meeting_schedule", models.CharField(max_length = 500)),
                 (
                     "instructor",
                     models.ForeignKey(
@@ -94,7 +94,7 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("student_id", models.CharField(unique=True)),
+                ("student_id", models.CharField(max_length = 100, unique=True)),
                 (
                     "user",
                     models.OneToOneField(
@@ -104,6 +104,7 @@ class Migration(migrations.Migration):
                 ),
             ],
         ),
+
         migrations.CreateModel(
             name="QRCodeUpload",
             fields=[
