@@ -50,7 +50,7 @@ class StudentProfile(models.Model):
 		User,
 		on_delete = models.CASCADE,
 	)
-	student_id = models.CharField(unique = True)
+	student_id = models.CharField(max_length = 100, unique = True)
 	def __str__(self):
 		return self.user.get_username()
 
@@ -60,12 +60,13 @@ class StudentProfile(models.Model):
 class Course(models.Model):
 	#""store course with instructor name and meeting schedule""
 
-	name = models.CharField()
+	name = models.CharField(max_length = 300)
 	instructor = models.ForeignKey(
 		InstructorProfile,
 		on_delete = models.PROTECT,
 	)
-	meeting_schedule = models.CharField()
+	meeting_schedule = models.CharField(max_length = 500)
+
 	def __str__(self):
 		return self.name
 
