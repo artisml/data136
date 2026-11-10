@@ -79,7 +79,7 @@ def createUser(request):
 
 	if User.objects.filter(username=username).exists():
 		return JsonResponse({"error": "Username already taken."}, status=400)
-#Create acc together
+
 	try:
 		with transaction.atomic():
 			user = User.objects.create_user(
@@ -103,7 +103,16 @@ def createUser(request):
 # ---------------------------------------------------------------------------
 # HW5  — courses, lectures, QR uploads, dump
 # ---------------------------------------------------------------------------
-
+@require_GET
+def new_course(request):
+	return render(request, "app/new_course.html")
+@require_GET
+def new_lecture(request):
+	courses = Course.objects.order_by("name")
+	return render(request, "app/new_lecture.html", {"courses": courses})
+@require_GET
+def new_qr_upload(request):
+	return render(request, "app/new_qr_upload.html")
 
 
 

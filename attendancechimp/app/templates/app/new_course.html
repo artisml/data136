@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>New Course</title></head>
+<body>
+    <h1>Create Course</h1>
+    <form action="/app/createCourse" method="post">
+        {% csrf_token %}
+        <p><label>Course name <input name="course-name" required></label></p>
+        <p><label>Start time <input type="time" name="start-time" required></label></p>
+        <p><label>End time <input type="time" name="end-time" required></label></p>
+
+        <label><input type="checkbox" name="day-mon" value="1"> Monday</label>
+        <label><input type="checkbox" name="day-tue" value="1"> Tuesday</label>
+        <label><input type="checkbox" name="day-wed" value="1"> Wednesday</label>
+        <label><input type="checkbox" name="day-thu" value="1"> Thursday</label>
+        <label><input type="checkbox" name="day-fri" value="1"> Friday</label>
+
+        <p><button type="submit">Create Course</button></p>
+    </form>
+</body>
+</html>
+

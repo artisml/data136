@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>New Lecture</title></head>
+<body>
+    <h1>Create Lecture</h1>
+    <form action="/app/createLecture" method="post">
+        {% csrf_token %}
+        <label>
+            Course
+            <select name="choice" required>
+                <option value="">Choose a course</option>
+                {% for course in courses %}
+                    <option value="{{ course.name }}">{{ course.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button type="submit">Create Lecture</button>
+    </form>
+</body>
+</html>
+
