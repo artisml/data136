@@ -26,6 +26,11 @@ from .models import InstructorProfile, StudentProfile
 
 CDT = zoneinfo.ZoneInfo("America/Chicago")
 from datetime import datetime, timedelta, timezone
+from datetime import time as clock_time
+from django.utils import timezone as django_timezone
+from .models import Course, Lecture, QRCodeUpload, InstructorProfile, StudentProfile
+
+
 
 
 # ---------------------------------------------------------------------------
