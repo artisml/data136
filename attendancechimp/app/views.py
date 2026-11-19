@@ -28,7 +28,8 @@ CDT = zoneinfo.ZoneInfo("America/Chicago")
 from datetime import datetime, timedelta, timezone
 from datetime import time as clock_time
 from django.utils import timezone as django_timezone
-from .models import Course, Lecture, QRCodeUpload, InstructorProfile, StudentProfile
+from .models import Course, Lecture, QRCodeUpload, InstructorProfile, StudentProfile, getUploadsForCourse
+from zoneinfo import ZoneInfo
 
 
 
@@ -164,6 +165,14 @@ def createCourse(request):
         name=name,
         instructor=instructor,
         meeting_schedule=schedule,
+	start_time = start_time,
+	end_time = end_time,
+	day_mon="day-mon" in request.POST,
+	day_tue="day-tue" in request.POST,
+	day_wed="day-wed" in request.POST,
+	day_thu="day-thu" in request.POST,
+	day_fri="day-fri" in request.POST,
+
     )
     return JsonResponse({"message": "Course created.", "id": course.pk})
 
@@ -219,6 +228,45 @@ def dumpUploads(request):
 # ---------------------------------------------------------------------------
 # HW6  — getUploads
 # ---------------------------------------------------------------------------
+
+
+@require_GET
+def getUploads(request):
+	if role_profile(request, InstructorProfile) is None:
+		return JsonResponse(
+			{"error": "Instructor login required."},
+			status = 401,
+		)
+
+	course_number = request.Get.get("course", "").strip()
+	if not course_number:
+		return JsonResponse(
+			{"error": "Missing course parameter"},
+			status = 400,
+		)
+
+	uploads = getUploadsForCourse(course_number)
+	chicago = ZoneInfo("America/Chicago")
+	data = []
+	
+	for upload in uploads:
+		timestamp = upload.time_uploaded
+		if django_timezone.is_naive(timestamp):
+			timestamp = django_timezone.make_aware(
+				timestamp,
+				ZoneInfo("UTC"),
+			)
+		local_timestamp = django_timezone.localtime(
+			timestamp,
+			chicago,
+		)
+
+		data.append({
+			"username": upload.student.user.username,
+			"upload_time": local_timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+		})
+
+	return JsonResponse(data, safe=False)
 
 
 

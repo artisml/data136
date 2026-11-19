@@ -23,7 +23,8 @@ import uuid
 import logging
 import string
 import random
-
+from django.utils import timezone
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__) # set up tracking, auditing, and debugging
                                                                # allows using logger.warning(), logger.error(), 
@@ -66,10 +67,32 @@ class Course(models.Model):
 		on_delete = models.PROTECT,
 	)
 	meeting_schedule = models.CharField(max_length = 500)
+	
+	day_mon = models.BooleanField(default=False)
+	day_tue = models.BooleanField(default=False)
+	day_wed = models.BooleanField(default=False)
+	day_thu = models.BooleanField(default=False)
+	day_fri = models.BooleanField(default=False)
+
+	start_time = models.TimeField(null=True, blank=True)
+	end_time = models.TimeField(null=True, blank=True)
+	
+	def meets_on_day(self, weekday):
+		days = [
+			self.day_mon,
+			self.day_tue,
+			self.day_wed,
+			self.day_thu,
+			self.day_fri,
+			False,
+			False,
+		]
+		return days[weekday]		
+
 
 	def __str__(self):
 		return self.name
-
+	
 #INCLUDE NAME INSTRUCTOR MEETING SCHEDULE
 # ---------------------------------------------------------------------------
 
@@ -153,5 +176,42 @@ class QRCodeUpload(models.Model):
 # ---------------------------------------------------------------------------
 
 
+
+def getUploadsForCourse(course):
+	selected_course = Course.objects.filter(course=course).first()
+
+	if selected_course is None:
+		return []
+	if selected_course.start_time is None or selected_course.end_time is None:
+		return []
+
+	uploads = QRCodeUpload.objects.filter(
+		lecture__course=selected_course
+	).order_by("pk")
+
+	valid_uploads = []
+	chicago = ZoneInfo("America/Chicago")
+
+	for upload in uploads:
+		timestamp = upload.time_uploaded
+		if timezone.is_naive(timestamp):
+			timestamp = timezone.make_aware(timestamp, ZoneInfo("UTC"))
+		local_timestamp = timezone.localtime(timestamp, chicago)
+
+		correct_day = selected_course.meets_on_day(
+			local_timestamp.weekday()
+		)
+
+		correct_time = (
+			selected_course.start_time
+			<= local_timestamp.time()
+			<= selected_course.end_time
+		)
+
+
+		if correct_day and correct_time:
+			valid_uploads.append(upload)
+		
+	return valid_uploads
 
 
