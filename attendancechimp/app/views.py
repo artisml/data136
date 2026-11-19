@@ -238,12 +238,13 @@ def getUploads(request):
 			status = 401,
 		)
 
-	course_number = request.Get.get("course", "").strip()
+	course_number = request.GET.get("course", "").strip()
 	if not course_number:
 		return JsonResponse(
 			{"error": "Missing course parameter"},
 			status = 400,
 		)
+
 
 	uploads = getUploadsForCourse(course_number)
 	chicago = ZoneInfo("America/Chicago")

@@ -178,7 +178,7 @@ class QRCodeUpload(models.Model):
 
 
 def getUploadsForCourse(course):
-	selected_course = Course.objects.filter(course=course).first()
+	selected_course = Course.objects.filter(name=course).first()
 
 	if selected_course is None:
 		return []
