@@ -21,7 +21,8 @@ import zoneinfo
 import json
 import io
 from decimal import Decimal
-from .models import InstructorProfile, StudentProfile
+from .models import InstructorProfile, StudentProfile, decoreQR, generate_qr
+
 
 
 CDT = zoneinfo.ZoneInfo("America/Chicago")
@@ -180,29 +181,93 @@ def createCourse(request):
 @require_POST
 def createLecture(request):
     if role_profile(request, InstructorProfile) is None:
-        return JsonResponse({"error": "Instructor login required."}, status=401)
+        return JsonResponse(
+            {"error": "Instructor login required."},
+            status=401,
+        )
 
     name = request.POST.get("choice", "").strip()
     course = Course.objects.filter(name=name).first()
-    if course is None:
-        return JsonResponse({"error": "This course doesnt exist"}, status=400)
 
-    lecture = Lecture.objects.create(course=course, date=django_timezone.now())
-    return JsonResponse({"message": "Lecture created.", "id": lecture.pk})
+    if course is None:
+        return JsonResponse(
+            {"error": "Choose an existing course."},
+            status=400,
+        )
+
+    if "qrdata" in request.POST:
+        qr = request.POST["qrdata"]
+    else:
+        qr = generate_qr()
+
+        while Lecture.objects.filter(qr=qr).exists():
+            qr = generate_qr()
+
+    if len(qr) > 255:
+        return JsonResponse(
+            {"error": "QR identifier is too long."},
+            status=400,
+        )
+
+    if Lecture.objects.filter(qr=qr).exists():
+        return JsonResponse(
+            {"error": "QR identifier already exists."},
+            status=400,
+        )
+
+    lecture = Lecture.objects.create(
+        course=course,
+        date=django_timezone.now(),
+        qr=qr,
+    )
+
+    return JsonResponse({
+        "message": "Lecture created.",
+        "id": lecture.pk,
+        "qr": lecture.qr,
+    })
 
 @csrf_exempt
 @require_POST
 def createQRCodeUpload(request):
     student = role_profile(request, StudentProfile)
+
     if student is None:
-        return JsonResponse({"error": "Student login required."}, status=401)
+        return JsonResponse(
+            {"error": "Student login required."},
+            status=401,
+        )
 
     image = request.FILES.get("imageUpload")
-    if image is None:
-        return JsonResponse({"error": "Choose a file."}, status=400)
 
-    upload = QRCodeUpload.objects.create(student=student, image=image)
-    return JsonResponse({"message": "Upload confirmed.", "id": upload.pk})
+    if image is None:
+        return JsonResponse(
+            {"error": "Choose a file to upload."},
+            status=400,
+        )
+
+    decoded_text = decodeQR(image)
+    lecture = None
+
+    if decoded_text is not None:
+        lecture = Lecture.objects.filter(qr=decoded_text).first()
+
+    upload = QRCodeUpload.objects.create(
+        student=student,
+        image=image,
+        lecture=lecture,
+    )
+
+    if lecture is None:
+        return JsonResponse(
+            {"error": "Invalid QR code"},
+            status=400,
+        )
+
+    return JsonResponse({
+        "status": "ok",
+        "id": upload.pk,
+    })
 
 
 

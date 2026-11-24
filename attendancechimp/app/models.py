@@ -25,6 +25,10 @@ import string
 import random
 from django.utils import timezone
 from zoneinfo import ZoneInfo
+import secrets
+import string
+from PIL import Image
+from pyzbar.pyzbar import decode as zbar_decode, ZBarSymbol 
 
 logger = logging.getLogger(__name__) # set up tracking, auditing, and debugging
                                                                # allows using logger.warning(), logger.error(), 
@@ -126,6 +130,9 @@ class Enrollment(models.Model):
 # ---------------------------------------------------------------------------
 # Lecture
 # ---------------------------------------------------------------------------
+def generate_qr():
+	characters = string.ascii_letters + string.digits
+	return "".join(secrets.choice(characters) for _ in range(16))
 
 class Lecture(models.Model):
 	#""store course w date, time, and qr""
@@ -135,10 +142,12 @@ class Lecture(models.Model):
 
 	)
 	date = models.DateTimeField()
-	qr = models.UUIDField(
-		default = uuid.uuid4,
+	qr = models.CharField(
+		max_length=255,
 		unique = True,
-	)
+		default = generate+qr,
+		editable = False,
+	)	
 
 	def __str__(self):
 		return f"{self.course} - {self.date}"
@@ -160,6 +169,8 @@ class QRCodeUpload(models.Model):
 		Lecture,
 		on_delete = models.SET_NULL,
 		null = True,
+		blank=True,
+
 	)
 	image = models.FileField(upload_to = "qr_uploads/") #stores path photo is uploaded in
 	time_uploaded = models.DateTimeField(auto_now_add = True)
@@ -214,4 +225,26 @@ def getUploadsForCourse(course):
 		
 	return valid_uploads
 
+def decodeQR(image):
+	try:
+		image.seek(0)
+		picture = Image.open(image).convert("RGB")
+		codes = zbar_decode(
+			picture,
+			symbols = [ZBarSymbol.QRCODE],
+		)
+
+		if not codes:
+			return None
+
+		return codes[0].data.decode("utf-8")
+
+	except Exception:
+		return None
+
+	finally:
+		try:
+			image.seek(0)
+		except (AttributeError,OSError, ValueError):
+			pass
 
