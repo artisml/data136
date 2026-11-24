@@ -21,7 +21,8 @@ import zoneinfo
 import json
 import io
 from decimal import Decimal
-from .models import InstructorProfile, StudentProfile, decoreQR, generate_qr
+from .models import InstructorProfile, StudentProfile, decodeQR, generate_qr
+
 
 
 
